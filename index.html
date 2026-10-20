@@ -1,0 +1,197 @@
+<!DOCTYPE html>
+<html lang="bg" id="html-root">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TasksFlow App</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+
+    <div class="app-layout">
+        
+       
+        <main class="todo-card">
+            
+            
+            <header class="header">
+                <div class="header-title">
+                    <h1>TasksFlow</h1>
+                    <p class="subtitle" id="current-date" data-i18n="subtitle">Днешен преглед</p>
+                </div>
+                <div class="header-right-controls">
+                    <button id="lang-toggle-btn" onclick="toggleLanguage()" title="Switch Language / Смени език">
+                        <span id="lang-label">EN</span>
+                        <img src="./images/icon-earth.png" width="15px" height="15px">
+                    </button>
+                    <div class="header-icon">
+                        <img id="calendar" src="./images/schedule.png" alt="schedule">
+                    </div>
+                </div>
+            </header>
+
+           
+            <section class="progress-section">
+                <div class="progress-info">
+                    <span data-translate="progress-title">Изпълнение на задачите</span>
+                    <strong id="progress-percent">0%</strong>
+                </div>
+                <div class="progress-bar-container">
+                    <div id="progress-fill" class="progress-fill"></div>
+                </div>
+            </section>
+
+           
+            <section class="input-section" id="input-section">
+                <div class="input-group">
+                    <img src="./images/add.png" width="14px" height="14px" alt="Search">
+                    <input type="text" id="input-box" data-translate-placeholder="input-placeholder" placeholder="Какво трябва да се направи?" autocomplete="off">
+                    
+                    <div class="input-controls">
+                        <select id="priority-select" title="Приоритет">
+                            <option value="low" selected data-translate="opt-low">Нисък</option>
+                            <option value="medium"  data-translate="opt-medium">Среден</option>
+                            <option value="high" data-translate="opt-high">Висок</option>
+                        </select>
+                        
+                       
+                        <div class="date-picker-wrapper" data-translate-title="due-date-title" title="Краен срок">
+                            <img src="./images/calendar-solid.png" width="15px" height="15px">
+                            <input type="date" id="date-box">
+                        </div>
+
+                        <button id="add-btn" onclick="addTask()">
+                            <span data-translate="btn-add">Добави</span>
+                        </button>
+                    </div>
+                </div>
+            </section>
+
+            
+            <nav class="tab-buttons">
+                <button id="tab-active" class="tab-btn active" onclick="switchTab('active')">
+                    <img src="./images/file-list.png" width="30px" height="30px"> <span data-translate="tab-active">Активни</span> (<span id="active-count">0</span>)
+                </button>
+                <button id="tab-history" class="tab-btn" onclick="switchTab('history')">
+                    <img src="./images/archive.png" width="30px" height="30px"> <span data-translate="tab-history">Архив</span> (<span id="history-count">0</span>)
+                </button>
+            </nav>
+
+              <div class="drag-hint">
+                <img src="./images/double-arrow.png" width="24" height="24" style="opacity: 0.4">
+                <span data-translate="drag-hint">
+                    Кликнете и влачете задачите за пренареждане
+                </span>
+            </div>
+
+            
+            <ul id="list-container" class="task-list active-view"></ul>
+            <ul id="history-container" class="task-list hidden-view"></ul>
+
+           
+            <footer class="card-footer">
+                <button id="clear-all" onclick="clearData()">
+                    <img src="./images/red-trashcan.png" width="15px" height="15px">
+                 <span data-translate="btn-clear">Изчисти всичко</span>
+                </button>
+            </footer>
+
+        </main>
+
+      <aside class="music-player" id="music-player-card">
+        <div id="playlist-input-container" style="display: none; padding: 10px; background: #f8fafc; border-bottom: 1px solid #f1f5f9; gap: 6px; align-items: center;">
+    <input type="text" id="playlist-url-input" data-translate-placeholder="playlist-placeholder" placeholder="Paste Spotify link...">
+    <button onclick="saveNewPlaylist()" style="background: #6366f1; color: white; border: none; padding: 6px 10px; border-radius: 6px; font-size: 11px; cursor: pointer; font-weight: 600;">OK</button>
+</div>
+    <div class="player-header">
+        <span> <span data-translate="player-title">Плейлист</span></span>
+        <div style="display: flex; gap: 4px; align-items: center;">
+            <button id="change-playlist-btn" onclick="promptPlaylistChange()" title="Смени плейлиста / Change Playlist" style="background: transparent; border: none; cursor: pointer; color: #64748b; font-size: 12px; display: flex; align-items: center; justify-content: center; width: 28px; height: 28px; border-radius: 6px;">
+                <img src="./images/gear.png" width="15px" height="15px">
+            </button>
+            <button id="toggle-player-btn" onclick="togglePlayer()" data-translate-title="player-toggle-title" title="Минимизиране / Разширяване">
+                <img src="./images/toggle_expand_hide.png" width="15px" height="15px">
+            </button>
+        </div>
+    </div>
+    <div class="player-body" id="player-body">
+        <iframe 
+            id="spotify-iframe"
+            data-testid="embed-iframe" 
+            src="https://open.spotify.com/embed/playlist/1a2SgCK2DuQdqsXnhplZB0?utm_source=generator&si=1ed5c0958b334391" 
+            frameBorder="0" 
+            allowfullscreen="" 
+            allow="autoplay; clipboard-write; encrypted-media; fullscreen; picture-in-picture" 
+            loading="lazy">
+        </iframe>
+    </div>
+</aside>
+
+   
+    <div id="edit-modal" class="modal-overlay hidden">
+        <div class="modal-content">
+            <header class="modal-header">
+                <h3 data-translate="modal-title">Редактиране на задача</h3>
+                <button onclick="closeEditModal()" class="close-btn">&times;</button>
+            </header>
+            <div class="modal-body">
+                <div class="edit-form-group">
+                    <label for="edit-text-input" data-translate="modal-label-title">Заглавие:</label>
+                    <input type="text" id="edit-text-input">
+                    
+                </div>
+                <div class="edit-form-group">
+                    <label for="edit-priority-select" data-translate="modal-label-priority">Приоритет:</label>
+                    <select id="edit-priority-select">
+                        <option value="low" data-translate="opt-low">Нисък</option>
+                        <option value="medium" data-translate="opt-medium">Среден</option>
+                        <option value="high" data-translate="opt-high">Висок</option>
+                    </select>
+                </div>
+                <div class="edit-form-group">
+                    <label for="edit-date-input" data-translate="modal-label-date">Краен срок:</label>
+                    <input type="date" id="edit-date-input">
+                </div>
+                <div class="modal-actions">
+                    <button onclick="closeEditModal()" class="btn-cancel" data-translate="btn-cancel">Отказ</button>
+                    <button onclick="saveTaskEdit()" class="btn-save" data-translate="btn-save">Запази</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div id="toast-container"></div>
+
+<div id="delete-confirm-modal" class="modal-overlay hidden">
+    <div class="confirm-dialog-box">
+        <div class="confirm-dialog-icon">
+            <img src="./images/alert.png" width="36px" height="36px" alt="Warning">
+        </div>
+        <p id="delete-confirm-text" class="confirm-dialog-text"></p>
+        <div class="confirm-dialog-actions">
+            <button type="button" id="btn-confirm-no"
+                    class="btn-confirm-no"></button>
+            <button type="button" id="btn-confirm-yes"
+                    class="btn-confirm-yes"></button>
+        </div>
+    </div>
+</div>
+
+
+<div id="clear-confirm-modal" class="modal-overlay hidden">
+    <div class="confirm-dialog-box">
+        <div class="confirm-dialog-icon">
+            <img src="./images/alert.png" width="36px" height="36px" alt="Warning">
+        </div>
+        <p id="clear-confirm-text" class="confirm-dialog-text"></p>
+        <div class="confirm-dialog-actions">
+            <button type="button" id="btn-clear-no" class="btn-confirm-no"></button>
+            <button type="button" id="btn-clear-yes" class="btn-confirm-yes"></button>
+        </div>
+    </div>
+</div>
+</div>
+
+    <script src="index.js"></script>
+</body>
+</html>
